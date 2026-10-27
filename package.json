@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "screenshots": "node take_screenshots.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -22,5 +23,8 @@
     "hono": "^4.12.27",
     "pg": "^8.22.0",
     "serverless-http": "^4.0.0"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.16.0"
   }
 }
