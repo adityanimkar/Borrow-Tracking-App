@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shivkrupa Snacks - Ledger & Cashbook</title>
+  <meta name="description" content="Official transaction ledger and cashflow tracker for Shivkrupa Snacks.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tabler Icons CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <h1 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Shivkrupa Snacks management application with dashboard, borrower list, transaction history, and cashflow tracking</h1>
+
+  <div class="app" id="app">
+    <!-- Top Bar -->
+    <div class="topbar">
+      <div class="tb-logo" id="tb-logo-container"><i class="ti ti-cookie" aria-hidden="true"></i></div>
+      <div style="flex:1">
+        <div class="tb-title" id="tb-title">Shivkrupa Snacks</div>
+        <div class="tb-sub" id="tb-sub">Track every transaction</div>
+      </div>
+      <button class="tb-back" id="back-btn" style="display:none" onclick="goBack()"><i class="ti ti-arrow-left" style="font-size:14px" aria-hidden="true"></i>Back</button>
+      <button class="tb-back" id="theme-toggle-btn" onclick="toggleTheme()" style="padding: 8px 10px; margin-left: 6px;"><i class="ti ti-sun" id="theme-icon" aria-hidden="true"></i></button>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-wrap" id="main-nav">
+      <button class="nav-pill active" id="nav-btn-dashboard" onclick="showPage('dashboard',this)"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>Dashboard</button>
+      <button class="nav-pill" id="nav-btn-borrowers" onclick="showPage('borrowers',this)"><i class="ti ti-users" aria-hidden="true"></i>Borrowers</button>
+      <button class="nav-pill" id="nav-btn-pending" onclick="showPage('pending',this)"><i class="ti ti-clock-hour-4" aria-hidden="true"></i>Pending</button>
+      <button class="nav-pill" id="nav-btn-reports" onclick="showPage('reports',this)"><i class="ti ti-chart-bar" aria-hidden="true"></i>Reports</button>
+      <button class="nav-pill" id="nav-btn-cashflow" onclick="showPage('cashflow',this)"><i class="ti ti-cash" aria-hidden="true"></i>Cashflow</button>
+    </div>
+
+    <!-- Page: Dashboard -->
+    <div class="page active" id="page-dashboard">
+      <div class="section-label">Overview</div>
+      <div class="stats-grid" id="s1"></div>
+      <div class="stats-grid-3" id="s2"></div>
+      <div class="section-label">Cashflow Overview</div>
+      <div class="stats-grid-3" id="cf-dash-stats"></div>
+      <div class="section-label">Date range</div>
+      <div class="date-row">
+        <div class="date-inset"><i class="ti ti-calendar" aria-hidden="true"></i><input type="date" id="dr-start" onchange="updateDashboard()"></div>
+        <div class="date-inset"><i class="ti ti-calendar" aria-hidden="true"></i><input type="date" id="dr-end" onchange="updateDashboard()"></div>
+      </div>
+      <div class="range-card" id="range-card"></div>
+      <div class="section-label">Recent activity</div>
+      <div class="txn-list" id="dash-txns"></div>
+    </div>
+
+    <!-- Page: Borrowers -->
+    <div class="page" id="page-borrowers">
+      <div class="search-bar"><i class="ti ti-search" aria-hidden="true"></i><input type="text" id="s-name" placeholder="Search by name..." oninput="renderBorrowers()"></div>
+      <div class="search-row-2">
+        <div class="search-inset"><i class="ti ti-phone" style="font-size:14px;color:var(--ink3)" aria-hidden="true"></i><input type="text" id="s-phone" placeholder="Phone..." oninput="renderBorrowers()"></div>
+        <div class="search-inset"><i class="ti ti-package" style="font-size:14px;color:var(--ink3)" aria-hidden="true"></i><input type="text" id="s-item" placeholder="Item..." oninput="renderBorrowers()"></div>
+      </div>
+      <div id="borrower-list"></div>
+    </div>
+
+    <!-- Page: Pending Dues -->
+    <div class="page" id="page-pending">
+      <div class="section-label">Outstanding dues</div>
+      <div id="pending-list"></div>
+    </div>
+
+    <!-- Page: Reports -->
+    <div class="page" id="page-reports">
+      <div class="export-row">
+        <button class="export-btn" id="export-excel-btn" onclick="exportData('excel')"><i class="ti ti-file-spreadsheet" style="font-size:16px" aria-hidden="true"></i>Excel Export</button>
+        <button class="export-btn" id="export-pdf-btn" onclick="exportData('pdf')"><i class="ti ti-file-type-pdf" style="font-size:16px" aria-hidden="true"></i>PDF Export</button>
+      </div>
+      <div class="section-label">Report type</div>
+      <div class="report-grid">
+        <div class="report-card" id="report-card-daily" onclick="showReport('daily')"><div class="rc-icon-wrap"><i class="ti ti-calendar-day" style="color:var(--gold)" aria-hidden="true"></i></div><div class="rc-title">Daily</div><div class="rc-desc">Today's activity</div></div>
+        <div class="report-card" id="report-card-monthly" onclick="showReport('monthly')"><div class="rc-icon-wrap"><i class="ti ti-calendar-month" style="color:var(--em)" aria-hidden="true"></i></div><div class="rc-title">Monthly</div><div class="rc-desc">This month's view</div></div>
+        <div class="report-card" id="report-card-borrower" onclick="showReport('borrower')"><div class="rc-icon-wrap"><i class="ti ti-user-circle" style="color:var(--amber)" aria-hidden="true"></i></div><div class="rc-title">Borrower wise</div><div class="rc-desc">Per-person summary</div></div>
+        <div class="report-card" id="report-card-pending" onclick="showReport('pending')"><div class="rc-icon-wrap"><i class="ti ti-alert-circle" style="color:var(--coral)" aria-hidden="true"></i></div><div class="rc-title">Pending dues</div><div class="rc-desc">All outstanding</div></div>
+      </div>
+      <div id="report-content"></div>
+    </div>
+
+    <!-- Page: Cashflow (Income & Expense) -->
+    <div class="page" id="page-cashflow">
+      <div class="section-label">Cashflow Summary</div>
+      <div class="stats-grid-3" id="cf-stats-row">
+        <!-- Rendered dynamically via JavaScript -->
+      </div>
+      
+      <div class="action-row" style="margin-top: 15px; margin-bottom: 20px;">
+        <button class="action-btn em-c" id="btn-add-income" onclick="openModal('income-modal')" style="grid-column: span 2; display: flex; flex-direction: row; justify-content: center; gap: 8px; font-size: 12px; padding: 12px;"><i class="ti ti-plus" aria-hidden="true"></i>Add Income</button>
+        <button class="action-btn coral" id="btn-add-expense" onclick="openModal('expense-modal')" style="grid-column: span 2; display: flex; flex-direction: row; justify-content: center; gap: 8px; font-size: 12px; padding: 12px; color: var(--coral);"><i class="ti ti-minus" aria-hidden="true"></i>Add Expense</button>
+      </div>
+      
+      <div class="section-label">Cashflow Ledger</div>
+      <div class="search-bar">
+        <i class="ti ti-search" aria-hidden="true"></i>
+        <input type="text" id="cf-search-desc" placeholder="Search description..." oninput="renderCashflowPage()">
+      </div>
+      <div class="search-row-2">
+        <div class="search-inset">
+          <i class="ti ti-filter" style="font-size:14px;color:var(--ink3)" aria-hidden="true"></i>
+          <select id="cf-filter-type" onchange="renderCashflowPage()" style="background: transparent; border: none; font-size: 12px; color: var(--ink); width: 100%; outline: none; font-family: inherit;">
+            <option value="all">All Types</option>
+            <option value="income">Income Only</option>
+            <option value="expense">Expense Only</option>
+          </select>
+        </div>
+        <div class="search-inset">
+          <i class="ti ti-credit-card" style="font-size:14px;color:var(--ink3)" aria-hidden="true"></i>
+          <select id="cf-filter-method" onchange="renderCashflowPage()" style="background: transparent; border: none; font-size: 12px; color: var(--ink); width: 100%; outline: none; font-family: inherit;">
+            <option value="all">All Methods</option>
+            <option value="cash">Cash</option>
+            <option value="online">Online</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="txn-list" id="cashflow-list" style="margin-top: 12px;"></div>
+    </div>
+
+    <!-- Page: Borrower Profile -->
+    <div class="page" id="page-profile">
+      <div class="profile-hero" id="profile-hero"></div>
+      <div class="action-row">
+        <button class="action-btn call" id="btn-call-borrower" onclick="callBorrower()"><i class="ti ti-phone" aria-hidden="true"></i><span>Call</span></button>
+        <button class="action-btn wa" id="btn-wa-borrower" onclick="whatsappBorrower()"><i class="ti ti-brand-whatsapp" aria-hidden="true"></i><span>WhatsApp</span></button>
+        <button class="action-btn gold" id="btn-add-borrow" onclick="openModal('borrow-modal')"><i class="ti ti-plus" aria-hidden="true"></i><span>Add Borrow</span></button>
+        <button class="action-btn em-c" id="btn-receive-payment" onclick="openModal('receive-modal')"><i class="ti ti-arrow-bar-down" aria-hidden="true"></i><span>Receive</span></button>
+      </div>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="section-label">Transaction history</div>
+        <button class="tb-back" id="delete-borrower-btn" style="background:var(--bg); color:var(--coral); font-size:11px; margin-top:10px; border-radius:8px; padding:6px 10px;" onclick="deleteCurrentBorrower()"><i class="ti ti-trash" style="font-size:12px" aria-hidden="true"></i> Delete Borrower</button>
+      </div>
+      
+      <div class="txn-list" id="profile-txns" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="fab-wrap" id="fab-wrap">
+      <button class="fab-btn" id="fab-add-borrower" onclick="openModal('add-modal')"><i class="ti ti-user-plus" aria-hidden="true"></i>Add New Borrower</button>
+    </div>
+  </div>
+
+  <!-- Modal: Add Borrower -->
+  <div class="modal-bg" id="add-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <button class="modal-close" onclick="closeModal('add-modal')"><i class="ti ti-x" aria-hidden="true"></i></button>
+      <div class="modal-title">Add Borrower</div>
+      <div class="field"><label for="n-name">Name</label><div class="field-inset"><i class="ti ti-user" aria-hidden="true"></i><input type="text" id="n-name" placeholder="Full name"></div></div>
+      <div class="field"><label for="n-phone">Phone</label><div class="field-inset"><i class="ti ti-phone" aria-hidden="true"></i><input type="tel" id="n-phone" placeholder="10-digit number"></div></div>
+      <div class="field"><label for="n-addr">Address (optional)</label><div class="field-inset"><i class="ti ti-map-pin" aria-hidden="true"></i><input type="text" id="n-addr" placeholder="Area / locality"></div></div>
+      <div class="field"><label for="n-open">Opening borrow amount (₹)</label><div class="field-inset"><i class="ti ti-currency-rupee" aria-hidden="true"></i><input type="number" id="n-open" placeholder="0" min="0"></div></div>
+      <div class="field"><label for="n-notes">Notes</label><div class="field-inset"><i class="ti ti-notes" aria-hidden="true"></i><textarea id="n-notes" placeholder="Any notes..."></textarea></div></div>
+      <button class="btn-submit" id="btn-save-borrower" onclick="addBorrower()"><i class="ti ti-check" style="font-size:16px;vertical-align:-2px" aria-hidden="true"></i> Save Borrower</button>
+    </div>
+  </div>
+
+  <!-- Modal: Add Borrow Txn -->
+  <div class="modal-bg" id="borrow-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <button class="modal-close" onclick="closeModal('borrow-modal')"><i class="ti ti-x" aria-hidden="true"></i></button>
+      <div class="modal-title">Add Borrow</div>
+      <div class="field"><label for="b-date">Date</label><div class="field-inset"><i class="ti ti-calendar" aria-hidden="true"></i><input type="date" id="b-date"></div></div>
+      <div class="field"><label for="b-item">Item name</label><div class="field-inset"><i class="ti ti-package" aria-hidden="true"></i><input type="text" id="b-item" placeholder="e.g. Rice Bag, Cash"></div></div>
+      <div class="field"><label for="b-qty">Quantity</label><div class="field-inset"><i class="ti ti-stack-2" aria-hidden="true"></i><input type="number" id="b-qty" placeholder="1" min="1"></div></div>
+      <div class="field"><label for="b-amt">Amount (₹)</label><div class="field-inset"><i class="ti ti-currency-rupee" aria-hidden="true"></i><input type="number" id="b-amt" placeholder="0" min="0"></div></div>
+      <div class="field">
+        <label for="b-defect">Defect Detected</label>
+        <div class="field-inset">
+          <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+          <select id="b-defect" style="background: transparent; border: none; font-size: 14px; color: var(--ink); width: 100%; outline: none; font-family: inherit;">
+            <option value="none">None</option>
+            <option value="in house">In House</option>
+            <option value="QC">QC</option>
+            <option value="Assembly">Assembly</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label for="b-rem">Remarks</label><div class="field-inset"><i class="ti ti-message" aria-hidden="true"></i><textarea id="b-rem" placeholder="Optional..."></textarea></div></div>
+      <button class="btn-submit" id="btn-submit-borrow" onclick="addBorrowTxn()"><i class="ti ti-check" style="font-size:16px;vertical-align:-2px" aria-hidden="true"></i> Add Borrow</button>
+    </div>
+  </div>
+
+  <!-- Modal: Receive Payment Txn -->
+  <div class="modal-bg" id="receive-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <button class="modal-close" onclick="closeModal('receive-modal')"><i class="ti ti-x" aria-hidden="true"></i></button>
+      <div class="modal-title">Receive Payment</div>
+      <div class="field"><label for="r-date">Date</label><div class="field-inset"><i class="ti ti-calendar" aria-hidden="true"></i><input type="date" id="r-date"></div></div>
+      <div class="field"><label for="r-amt">Amount received (₹)</label><div class="field-inset"><i class="ti ti-currency-rupee" aria-hidden="true"></i><input type="number" id="r-amt" placeholder="0" min="0"></div></div>
+      <div class="field"><label for="r-item">Item returned (optional)</label><div class="field-inset"><i class="ti ti-package-import" aria-hidden="true"></i><input type="text" id="r-item" placeholder="Item name if any"></div></div>
+      <div class="field">
+        <label for="r-defect">Defect Detected</label>
+        <div class="field-inset">
+          <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+          <select id="r-defect" style="background: transparent; border: none; font-size: 14px; color: var(--ink); width: 100%; outline: none; font-family: inherit;">
+            <option value="none">None</option>
+            <option value="in house">In House</option>
+            <option value="QC">QC</option>
+            <option value="Assembly">Assembly</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label for="r-rem">Remarks</label><div class="field-inset"><i class="ti ti-message" aria-hidden="true"></i><textarea id="r-rem" placeholder="Optional..."></textarea></div></div>
+      <button class="btn-submit" id="btn-submit-receive" onclick="addReceiveTxn()"><i class="ti ti-check" style="font-size:16px;vertical-align:-2px" aria-hidden="true"></i> Record Payment</button>
+    </div>
+  </div>
+
+  <!-- Modal: Add Income -->
+  <div class="modal-bg" id="income-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <button class="modal-close" onclick="closeModal('income-modal')"><i class="ti ti-x" aria-hidden="true"></i></button>
+      <div class="modal-title">Add Income</div>
+      <div class="field"><label for="in-date">Date</label><div class="field-inset"><i class="ti ti-calendar" aria-hidden="true"></i><input type="date" id="in-date"></div></div>
+      <div class="field"><label for="in-amt">Amount (₹)</label><div class="field-inset"><i class="ti ti-currency-rupee" aria-hidden="true"></i><input type="number" id="in-amt" placeholder="0" min="0"></div></div>
+      <div class="field">
+        <label for="in-method">Payment Method</label>
+        <div class="field-inset">
+          <i class="ti ti-credit-card" aria-hidden="true"></i>
+          <select id="in-method" style="background: transparent; border: none; font-size: 14px; color: var(--ink); width: 100%; outline: none; font-family: inherit;">
+            <option value="cash">Cash</option>
+            <option value="online">Online</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label for="in-desc">Description</label><div class="field-inset"><i class="ti ti-message" aria-hidden="true"></i><input type="text" id="in-desc" placeholder="e.g. Sales, Interest, Salary"></div></div>
+      <button class="btn-submit" id="btn-submit-income" onclick="addIncome()"><i class="ti ti-check" style="font-size:16px;vertical-align:-2px" aria-hidden="true"></i> Record Income</button>
+    </div>
+  </div>
+
+  <!-- Modal: Add Expense -->
+  <div class="modal-bg" id="expense-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <button class="modal-close" onclick="closeModal('expense-modal')"><i class="ti ti-x" aria-hidden="true"></i></button>
+      <div class="modal-title">Add Expense</div>
+      <div class="field"><label for="ex-date">Date</label><div class="field-inset"><i class="ti ti-calendar" aria-hidden="true"></i><input type="date" id="ex-date"></div></div>
+      <div class="field"><label for="ex-amt">Amount (₹)</label><div class="field-inset"><i class="ti ti-currency-rupee" aria-hidden="true"></i><input type="number" id="ex-amt" placeholder="0" min="0"></div></div>
+      <div class="field">
+        <label for="ex-method">Payment Method</label>
+        <div class="field-inset">
+          <i class="ti ti-credit-card" aria-hidden="true"></i>
+          <select id="ex-method" style="background: transparent; border: none; font-size: 14px; color: var(--ink); width: 100%; outline: none; font-family: inherit;">
+            <option value="cash">Cash</option>
+            <option value="online">Online</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label for="ex-desc">Description</label><div class="field-inset"><i class="ti ti-message" aria-hidden="true"></i><input type="text" id="ex-desc" placeholder="e.g. Rent, Groceries, Stationery"></div></div>
+      <button class="btn-submit" id="btn-submit-expense" onclick="addExpense()"><i class="ti ti-check" style="font-size:16px;vertical-align:-2px" aria-hidden="true"></i> Record Expense</button>
+    </div>
+  </div>
+
+  <!-- Toast Message Banner -->
+  <div class="toast-banner" id="toast"></div>
+
+  <!-- App Logic Javascript -->
+  <script src="/js/app.js"></script>
+</body>
+</html>
