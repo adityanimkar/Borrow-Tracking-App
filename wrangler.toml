@@ -1,11 +1,11 @@
-name = "shivkrupa-snacks"
+name = ""
 main = "worker.js"
-compatibility_date = "2025-01-01"
+compatibility_date = ""
 compatibility_flags = [ "nodejs_compat", "enable_nodejs_http_server_modules" ]
-account_id = "780387f6ace0507c11c27aa98e686771"
+account_id = ""
 
 [assets]
 directory = "./public"
 
 [vars]
-DATABASE_URL = "postgresql://neondb_owner:npg_NOg08ZatInMQ@ep-withered-unit-apgk5o4z-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+DATABASE_URL = "your url"
